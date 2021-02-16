@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GrouppedListReorder.ViewModels;
 using Xamarin.Forms;
 
 namespace GrouppedListReorder
@@ -13,6 +14,7 @@ namespace GrouppedListReorder
         public MainPage()
         {
             InitializeComponent();
+            BindingContext = new MainPageViewModel();
         }
     }
 }
