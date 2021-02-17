@@ -1,6 +1,8 @@
-﻿using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Windows.Input;
 using Xamarin.CommunityToolkit.ObjectModel;
+using Xamarin.Forms;
 
 namespace GrouppedListReorder.ViewModels
 {
@@ -13,8 +15,81 @@ namespace GrouppedListReorder.ViewModels
             set { SetProperty(ref _items, value); }
         }
 
+        public ItemViewModel _draggedItem;
+        public ItemViewModel DraggedItem
+        {
+            get { return _draggedItem; }
+            set { SetProperty(ref _draggedItem, value); }
+        }
+
+        public ICommand StateRefresh { get; }
+
+        public ICommand StateReset { get; }
+
+        public ICommand StateTest { get; }
+
+        public ICommand ItemDragged { get; }
+
+        public ICommand ItemDropped { get; }
+
         public MainPageViewModel()
         {
+            StateRefresh = new Command(OnStateRefresh);
+            StateReset = new Command(OnStateReset);
+            StateTest = new Command(OnStateTest);
+            ItemDragged = new Command<ItemViewModel>(OnItemDragged);
+            ItemDropped = new Command<ItemViewModel>(OnItemDropped);
+            ResetItemsState();
+        }
+
+        private void OnStateRefresh()
+        {
+            Debug.WriteLine($"OnStateRefresh");
+            OnPropertyChanged(nameof(Items));
+            PrintItemsState();
+        }
+
+        private void OnStateReset()
+        {
+            Debug.WriteLine($"OnStateReset");
+            ResetItemsState();
+            PrintItemsState();
+        }
+
+        private void OnStateTest()
+        {
+            Items.RemoveAt(4);
+            Items.Insert(0, new ItemViewModel { Title = "Item new 1" });
+            PrintItemsState();
+        }
+
+        private void OnItemDragged(ItemViewModel item)
+        {
+            Debug.WriteLine($"OnItemDragged: {item?.Title}");
+            DraggedItem = item;
+        }
+
+        private void OnItemDropped(ItemViewModel item)
+        {
+            var itemToMove = DraggedItem;
+            var itemToInsertBefore = item;
+            DraggedItem = null;
+
+            if (itemToMove == null || itemToInsertBefore == null || itemToMove == itemToInsertBefore)
+                return;
+
+            Items.Remove(itemToMove);
+            var insertAtIndex = Items.IndexOf(itemToInsertBefore);
+            Items.Insert(insertAtIndex, itemToMove);
+            Debug.WriteLine($"OnItemDropped: [{itemToMove?.Title}] => [{itemToInsertBefore?.Title}], target index = [{insertAtIndex}]");
+
+            //OnPropertyChanged(nameof(Items));
+            PrintItemsState();
+        }
+
+        private void ResetItemsState()
+        {
+            Items.Clear();
             Items.Add(new ItemViewModel { Category = "Category 1", Title = "Item 1" });
             Items.Add(new ItemViewModel { Category = "Category 1", Title = "Item 2" });
             Items.Add(new ItemViewModel { Category = "Category 2", Title = "Item 3" });
@@ -22,6 +97,15 @@ namespace GrouppedListReorder.ViewModels
             Items.Add(new ItemViewModel { Category = "Category 2", Title = "Item 5" });
             Items.Add(new ItemViewModel { Category = "Category 2", Title = "Item 6" });
             Items.Add(new ItemViewModel { Category = "Category 3", Title = "Item 7" });
+        }
+
+        private void PrintItemsState()
+        {
+            Debug.WriteLine($"Items {Items.Count}, state:");
+            for (int i = 0; i < Items.Count; i++)
+            {
+                Debug.WriteLine($"\t{i}: {Items[i].Title}");
+            }
         }
     }
 }
