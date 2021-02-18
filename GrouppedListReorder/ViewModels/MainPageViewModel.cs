@@ -1,8 +1,11 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.CommunityToolkit.ObjectModel;
 using Xamarin.Forms;
+using Xamarin.Forms.Internals;
 
 namespace GrouppedListReorder.ViewModels
 {
@@ -15,12 +18,12 @@ namespace GrouppedListReorder.ViewModels
             set { SetProperty(ref _items, value); }
         }
 
-        public ItemViewModel _draggedItem;
-        public ItemViewModel DraggedItem
-        {
-            get { return _draggedItem; }
-            set { SetProperty(ref _draggedItem, value); }
-        }
+        //public ItemViewModel _draggedItem;
+        //public ItemViewModel DraggedItem
+        //{
+        //    get { return _draggedItem; }
+        //    set { SetProperty(ref _draggedItem, value); }
+        //}
 
         public ICommand StateRefresh { get; }
 
@@ -30,6 +33,8 @@ namespace GrouppedListReorder.ViewModels
 
         public ICommand ItemDragged { get; }
 
+        public ICommand ItemDraggedOver { get; }
+
         public ICommand ItemDropped { get; }
 
         public MainPageViewModel()
@@ -38,7 +43,8 @@ namespace GrouppedListReorder.ViewModels
             StateReset = new Command(OnStateReset);
             StateTest = new Command(OnStateTest);
             ItemDragged = new Command<ItemViewModel>(OnItemDragged);
-            ItemDropped = new Command<ItemViewModel>(OnItemDropped);
+            ItemDraggedOver = new Command<ItemViewModel>(OnItemDraggedOver);
+            ItemDropped = new Command<ItemViewModel>(i => OnItemDropped(i));
             ResetItemsState();
         }
 
@@ -66,19 +72,29 @@ namespace GrouppedListReorder.ViewModels
         private void OnItemDragged(ItemViewModel item)
         {
             Debug.WriteLine($"OnItemDragged: {item?.Title}");
-            DraggedItem = item;
+            Items.ForEach(i => i.IsBeingDragged = item == i);
         }
 
-        private void OnItemDropped(ItemViewModel item)
+        private void OnItemDraggedOver(ItemViewModel item)
         {
-            var itemToMove = DraggedItem;
+            Debug.WriteLine($"OnItemDraggedOver: {item?.Title}");
+            Items.ForEach(i => i.IsBeingDraggedOver = item == i);
+        }
+
+        private async Task OnItemDropped(ItemViewModel item)
+        {
+            var itemToMove = _items.FirstOrDefault(i => i.IsBeingDragged);
             var itemToInsertBefore = item;
-            DraggedItem = null;
 
             if (itemToMove == null || itemToInsertBefore == null || itemToMove == itemToInsertBefore)
                 return;
 
             Items.Remove(itemToMove);
+
+            // Wait for remove animation to be completed
+            // https://github.com/xamarin/Xamarin.Forms/issues/13791
+            await Task.Delay(1000);
+
             var insertAtIndex = Items.IndexOf(itemToInsertBefore);
             Items.Insert(insertAtIndex, itemToMove);
             Debug.WriteLine($"OnItemDropped: [{itemToMove?.Title}] => [{itemToInsertBefore?.Title}], target index = [{insertAtIndex}]");

@@ -102,6 +102,8 @@
                                     DragStartingCommandParameter="{Binding}" />
                                 <DropGestureRecognizer
                                     AllowDrop="True"
+                                    DragOverCommand="{Binding BindingContext.ItemDraggedOver, Source={x:Reference MyItems}}"
+                                    DragOverCommandParameter="{Binding}"
                                     Drop="DropGestureRecognizer_Drop_Collection"
                                     DropCommand="{Binding BindingContext.ItemDropped, Source={x:Reference MyItems}}"
                                     DropCommandParameter="{Binding}" />

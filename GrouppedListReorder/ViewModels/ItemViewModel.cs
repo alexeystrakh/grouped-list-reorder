@@ -6,5 +6,8 @@ namespace GrouppedListReorder.ViewModels
     {
         public string Category { get; set; }
         public string Title { get; set; }
+
+        public bool IsBeingDragged { get; set; }
+        public bool IsBeingDraggedOver { get; set; }
     }
 }
