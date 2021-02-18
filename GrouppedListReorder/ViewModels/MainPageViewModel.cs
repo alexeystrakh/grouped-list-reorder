@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using GrouppedListReorder.Helpers;
 using Xamarin.CommunityToolkit.ObjectModel;
 using Xamarin.Forms;
 using Xamarin.Forms.Internals;
@@ -11,19 +12,19 @@ namespace GrouppedListReorder.ViewModels
 {
     public class MainPageViewModel : ObservableObject
     {
-        public ObservableCollection<ItemViewModel> _items = new ObservableCollection<ItemViewModel>();
+        private ObservableCollection<ItemViewModel> _items = new ObservableCollection<ItemViewModel>();
         public ObservableCollection<ItemViewModel> Items
         {
             get { return _items; }
             set { SetProperty(ref _items, value); }
         }
 
-        //public ItemViewModel _draggedItem;
-        //public ItemViewModel DraggedItem
-        //{
-        //    get { return _draggedItem; }
-        //    set { SetProperty(ref _draggedItem, value); }
-        //}
+        private ObservableCollection<ItemsGroupViewModel> _groupedItems = new ObservableCollection<ItemsGroupViewModel>();
+        public ObservableCollection<ItemsGroupViewModel> GroupedItems
+        {
+            get { return _groupedItems; }
+            set { SetProperty(ref _groupedItems, value); }
+        }
 
         public ICommand StateRefresh { get; }
 
@@ -93,20 +94,23 @@ namespace GrouppedListReorder.ViewModels
 
         private async Task OnItemDropped(ItemViewModel item)
         {
-            var itemToMove = _items.FirstOrDefault(i => i.IsBeingDragged);
+            var itemToMove = _items.First(i => i.IsBeingDragged);
             var itemToInsertBefore = item;
 
             if (itemToMove == null || itemToInsertBefore == null || itemToMove == itemToInsertBefore)
                 return;
 
-            Items.Remove(itemToMove);
+            var categoryToMoveFrom = GroupedItems.First(g => g.Contains(itemToMove));
+            categoryToMoveFrom.Remove(itemToMove);
 
             // Wait for remove animation to be completed
             // https://github.com/xamarin/Xamarin.Forms/issues/13791
-            await Task.Delay(1000);
+            // await Task.Delay(1000);
 
-            var insertAtIndex = Items.IndexOf(itemToInsertBefore);
-            Items.Insert(insertAtIndex, itemToMove);
+            var categoryToMoveTo = GroupedItems.First(g => g.Contains(itemToInsertBefore));
+            var insertAtIndex = categoryToMoveTo.IndexOf(itemToInsertBefore);
+            itemToMove.Category = categoryToMoveFrom.Name;
+            categoryToMoveTo.Insert(insertAtIndex, itemToMove);
             itemToMove.IsBeingDragged = false;
             itemToInsertBefore.IsBeingDraggedOver = false;
             Debug.WriteLine($"OnItemDropped: [{itemToMove?.Title}] => [{itemToInsertBefore?.Title}], target index = [{insertAtIndex}]");
@@ -125,6 +129,11 @@ namespace GrouppedListReorder.ViewModels
             Items.Add(new ItemViewModel { Category = "Category 2", Title = "Item 5" });
             Items.Add(new ItemViewModel { Category = "Category 2", Title = "Item 6" });
             Items.Add(new ItemViewModel { Category = "Category 3", Title = "Item 7" });
+
+            GroupedItems = Items
+                .GroupBy(i => i.Category)
+                .Select(g => new ItemsGroupViewModel(g.Key, g))
+                .ToObservableCollection();
         }
 
         private void PrintItemsState()
@@ -132,7 +141,7 @@ namespace GrouppedListReorder.ViewModels
             Debug.WriteLine($"Items {Items.Count}, state:");
             for (int i = 0; i < Items.Count; i++)
             {
-                Debug.WriteLine($"\t{i}: {Items[i].Title}");
+                Debug.WriteLine($"\t{i}: Group: {Items[i].Category} | Item: {Items[i].Title}");
             }
         }
     }

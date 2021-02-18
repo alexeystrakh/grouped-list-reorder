@@ -21,6 +21,7 @@
         <Grid
             Margin="10"
             ColumnSpacing="5"
+            IsVisible="false"
             RowSpacing="5">
             <StackLayout
                 Grid.Row="0"
@@ -81,7 +82,20 @@
                 </Label>
             </Grid>
         </Grid>
-        <CollectionView x:Name="MyItems" ItemsSource="{Binding Items}">
+        <CollectionView
+            x:Name="MyItems"
+            IsGrouped="True"
+            ItemsSource="{Binding GroupedItems}">
+            <CollectionView.GroupHeaderTemplate>
+                <DataTemplate>
+                    <Grid
+                        Padding="20"
+                        x:DataType="vm:ItemsGroupViewModel"
+                        BackgroundColor="PaleVioletRed">
+                        <Label Text="{Binding Name}" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.GroupHeaderTemplate>
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <StackLayout
