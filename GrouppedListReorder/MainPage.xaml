@@ -84,11 +84,27 @@
         <CollectionView x:Name="MyItems" ItemsSource="{Binding Items}">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <Grid
+                    <StackLayout
                         Padding="5"
                         x:DataType="vm:ItemViewModel"
                         BackgroundColor="Azure">
+                        <StackLayout.GestureRecognizers>
+                            <DropGestureRecognizer
+                                AllowDrop="True"
+                                DragLeaveCommand="{Binding BindingContext.ItemDragLeave, Source={x:Reference MyItems}}"
+                                DragLeaveCommandParameter="{Binding}"
+                                DragOverCommand="{Binding BindingContext.ItemDraggedOver, Source={x:Reference MyItems}}"
+                                DragOverCommandParameter="{Binding}"
+                                Drop="DropGestureRecognizer_Drop_Collection"
+                                DropCommand="{Binding BindingContext.ItemDropped, Source={x:Reference MyItems}}"
+                                DropCommandParameter="{Binding}" />
+                        </StackLayout.GestureRecognizers>
+                        <Grid
+                            BackgroundColor="LightYellow"
+                            HeightRequest="50"
+                            IsVisible="{Binding IsBeingDraggedOver}" />
                         <Label
+                            BackgroundColor="{Binding IsBeingDragged, Converter={StaticResource DragColorConverter}}"
                             FontSize="Large"
                             HeightRequest="50"
                             HorizontalTextAlignment="Center"
@@ -100,16 +116,9 @@
                                     DragStarting="DragGestureRecognizer_DragStarting_Collection"
                                     DragStartingCommand="{Binding BindingContext.ItemDragged, Source={x:Reference MyItems}}"
                                     DragStartingCommandParameter="{Binding}" />
-                                <DropGestureRecognizer
-                                    AllowDrop="True"
-                                    DragOverCommand="{Binding BindingContext.ItemDraggedOver, Source={x:Reference MyItems}}"
-                                    DragOverCommandParameter="{Binding}"
-                                    Drop="DropGestureRecognizer_Drop_Collection"
-                                    DropCommand="{Binding BindingContext.ItemDropped, Source={x:Reference MyItems}}"
-                                    DropCommandParameter="{Binding}" />
                             </Label.GestureRecognizers>
                         </Label>
-                    </Grid>
+                    </StackLayout>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

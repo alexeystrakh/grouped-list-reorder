@@ -35,6 +35,8 @@ namespace GrouppedListReorder.ViewModels
 
         public ICommand ItemDraggedOver { get; }
 
+        public ICommand ItemDragLeave { get; }
+
         public ICommand ItemDropped { get; }
 
         public MainPageViewModel()
@@ -44,6 +46,7 @@ namespace GrouppedListReorder.ViewModels
             StateTest = new Command(OnStateTest);
             ItemDragged = new Command<ItemViewModel>(OnItemDragged);
             ItemDraggedOver = new Command<ItemViewModel>(OnItemDraggedOver);
+            ItemDragLeave = new Command<ItemViewModel>(OnItemDragLeave);
             ItemDropped = new Command<ItemViewModel>(i => OnItemDropped(i));
             ResetItemsState();
         }
@@ -78,7 +81,14 @@ namespace GrouppedListReorder.ViewModels
         private void OnItemDraggedOver(ItemViewModel item)
         {
             Debug.WriteLine($"OnItemDraggedOver: {item?.Title}");
-            Items.ForEach(i => i.IsBeingDraggedOver = item == i);
+            var itemBeingDragged = _items.FirstOrDefault(i => i.IsBeingDragged);
+            Items.ForEach(i => i.IsBeingDraggedOver = item == i && item != itemBeingDragged);
+        }
+
+        private void OnItemDragLeave(ItemViewModel item)
+        {
+            Debug.WriteLine($"OnItemDragLeave: {item?.Title}");
+            Items.ForEach(i => i.IsBeingDraggedOver = false);
         }
 
         private async Task OnItemDropped(ItemViewModel item)
@@ -97,6 +107,8 @@ namespace GrouppedListReorder.ViewModels
 
             var insertAtIndex = Items.IndexOf(itemToInsertBefore);
             Items.Insert(insertAtIndex, itemToMove);
+            itemToMove.IsBeingDragged = false;
+            itemToInsertBefore.IsBeingDraggedOver = false;
             Debug.WriteLine($"OnItemDropped: [{itemToMove?.Title}] => [{itemToInsertBefore?.Title}], target index = [{insertAtIndex}]");
 
             //OnPropertyChanged(nameof(Items));
