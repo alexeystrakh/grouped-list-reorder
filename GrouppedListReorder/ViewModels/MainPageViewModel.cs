@@ -115,7 +115,6 @@ namespace GrouppedListReorder.ViewModels
             itemToInsertBefore.IsBeingDraggedOver = false;
             Debug.WriteLine($"OnItemDropped: [{itemToMove?.Title}] => [{itemToInsertBefore?.Title}], target index = [{insertAtIndex}]");
 
-            //OnPropertyChanged(nameof(Items));
             PrintItemsState();
         }
 
@@ -129,6 +128,14 @@ namespace GrouppedListReorder.ViewModels
             Items.Add(new ItemViewModel { Category = "Category 2", Title = "Item 5" });
             Items.Add(new ItemViewModel { Category = "Category 2", Title = "Item 6" });
             Items.Add(new ItemViewModel { Category = "Category 3", Title = "Item 7" });
+            Items.Add(new ItemViewModel { Category = "Category 3", Title = "Item 8" });
+            Items.Add(new ItemViewModel { Category = "Category 3", Title = "Item 9" });
+            Items.Add(new ItemViewModel { Category = "Category 3", Title = "Item 10" });
+            Items.Add(new ItemViewModel { Category = "Category 3", Title = "Item 11" });
+            Items.Add(new ItemViewModel { Category = "Category 3", Title = "Item 12" });
+            Items.Add(new ItemViewModel { Category = "Category 3", Title = "Item 13" });
+            Items.Add(new ItemViewModel { Category = "Category 3", Title = "Item 14" });
+            Items.Add(new ItemViewModel { Category = "Category 3", Title = "Item 15" });
 
             GroupedItems = Items
                 .GroupBy(i => i.Category)
